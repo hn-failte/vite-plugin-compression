@@ -79,41 +79,37 @@ export default function (options: VitePluginCompression = {}): Plugin {
         { size: number; oldSize: number; cname: string }
       >()
 
-      const handles = files.map(async (filePath: string) => {
-        const { mtimeMs, size: oldSize } = await fs.stat(filePath)
-        if (mtimeMs <= (mtimeCache.get(filePath) || 0) || oldSize < threshold)
-          return
+      for(const filePath of files) {
+        const { mtimeMs, size: oldSize } = fs.statSync(filePath)
+        if (mtimeMs > (mtimeCache.get(filePath) || 0) && oldSize >= threshold) {
+          let content = fs.readFileSync(filePath)
+          if (deleteOriginFile) {
+            fs.removeSync(filePath)
+          }
 
-        let content = await fs.readFile(filePath)
+          try {
+            content = compress(content, algorithm, compressOptions)
+          } catch (error) {
+            config.logger.error('compress error:' + filePath)
+          }
+          const size = content.byteLength
 
-        if (deleteOriginFile) {
-          fs.remove(filePath)
+          const cname = getOutputFileName(filePath, ext)
+          compressMap.set(filePath, {
+            size: size / 1024,
+            oldSize: oldSize / 1024,
+            cname: cname,
+          })
+          fs.writeFileSync(cname, content)
+
+          mtimeCache.set(filePath, Date.now())
         }
+      }
 
-        try {
-          content = await compress(content, algorithm, compressOptions)
-        } catch (error) {
-          config.logger.error('compress error:' + filePath)
-        }
-        const size = content.byteLength
-
-        const cname = getOutputFileName(filePath, ext)
-        compressMap.set(filePath, {
-          size: size / 1024,
-          oldSize: oldSize / 1024,
-          cname: cname,
-        })
-        await fs.writeFile(cname, content)
-
-        mtimeCache.set(filePath, Date.now())
-      })
-
-      return Promise.all(handles).then(() => {
-        if (verbose) {
-          handleOutputLogger(config, compressMap, algorithm)
-          success()
-        }
-      })
+      if (verbose) {
+        handleOutputLogger(config, compressMap, algorithm)
+        success()
+      }
     },
   }
 }
@@ -183,12 +179,7 @@ function compress(
   algorithm: 'gzip' | 'brotliCompress' | 'deflate' | 'deflateRaw',
   options: CompressionOptions = {},
 ) {
-  return new Promise<Buffer>((resolve, reject) => {
-    // @ts-ignore
-    zlib[algorithm](content, options, (err, result) =>
-      err ? reject(err) : resolve(result),
-    )
-  })
+  return zlib[algorithm + 'Sync'](content, options)
 }
 
 /**

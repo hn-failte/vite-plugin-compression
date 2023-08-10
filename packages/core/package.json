@@ -1,7 +1,7 @@
 {
-  "name": "vite-plugin-compression",
-  "version": "0.5.1",
-  "description": "Use gzip or brotli to compress resources.",
+  "name": "vite-plugin-compression-sync",
+  "version": "0.5.2",
+  "description": "Use gzip or brotli to compress resources. Base of vben/vite-plugin-compression@0.5.1 change to sync version",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -13,7 +13,7 @@
     }
   },
   "license": "MIT",
-  "author": "Vben",
+  "author": "hn-failte",
   "files": [
     "dist"
   ],
@@ -31,13 +31,13 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/anncwb/vite-plugin-compression",
+    "url": "https://github.com/hn-failte/vite-plugin-compression",
     "directory": "packages/core"
   },
   "bugs": {
-    "url": "https://github.com/anncwb/vite-plugin-compression/issues"
+    "url": "https://github.com/hn-failte/vite-plugin-compression/issues"
   },
-  "homepage": "https://github.com/anncwb/vite-plugin-compression/tree/master/#readme",
+  "homepage": "https://github.com/hn-failte/vite-plugin-compression/tree/master/#readme",
   "dependencies": {
     "chalk": "^4.1.2",
     "debug": "^4.3.3",
